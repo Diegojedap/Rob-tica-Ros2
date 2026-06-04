@@ -1,0 +1,11 @@
+{
+  "name": "curso-ros2-robotica",
+  "version": "1.0.0",
+  "description": "Plan de estudios interactivo — Robótica Fundamental con ROS2",
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "npx serve ."
+  },
+  "keywords": ["ros2", "robotica", "educacion"],
+  "license": "MIT"
+}

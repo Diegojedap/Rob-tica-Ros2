@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "site": "curso-ros-ia",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
