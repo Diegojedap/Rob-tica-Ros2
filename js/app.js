@@ -247,7 +247,7 @@ function renderWeekContent(wkId) {
   const w = WEEKS.find(x => x.id === wkId);
   const idx = WEEKS.indexOf(w);
   const pct = weekPct(w);
-  const topics  = w.topics.map(t => `<span class="topic">${t}</span>`).join("");
+  const topics  = w.topics.map(t => `<button class="topic" data-wk="${w.id}" data-topic="${t}">${t}</button>`).join("");
   const labs    = w.labs.map(itemHTML).join("");
   const vids    = w.videos.map(videoHTML).join("");
   const forts   = w.forts.map((f, i) => `<div class="fort" data-id="${w.id}_f${i}"><span class="led"></span>${f}</div>`).join("");
@@ -496,6 +496,12 @@ function bindPageContent() {
       showPage(`wk-${goBtn.dataset.go}`);
       return;
     }
+    // Topic chips
+    const topicBtn = e.target.closest(".topic[data-topic]");
+    if (topicBtn) {
+      openTopicModal(topicBtn.dataset.wk, topicBtn.dataset.topic);
+      return;
+    }
   });
 
   content.addEventListener("input", e => {
@@ -616,6 +622,51 @@ function bindFlashcards() {
   });
 }
 
+// ── Topic modal ───────────────────────────────────────────────────────────────
+function openTopicModal(wkId, topicName) {
+  const w = WEEKS.find(x => x.id === wkId);
+  const detail = w.topicDetails && w.topicDetails[topicName];
+
+  document.getElementById("tmWeek").textContent  = w.tag;
+  document.getElementById("tmTitle").textContent = topicName;
+
+  if (detail) {
+    document.getElementById("tmDesc").textContent = detail.desc;
+    const codeEl = document.getElementById("tmCode");
+    if (detail.code) {
+      const escaped = detail.code
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      document.getElementById("tmCodeLabel").textContent = detail.codeLabel || "Ejemplo";
+      document.getElementById("tmCodePre").innerHTML = escaped;
+      codeEl.style.display = "block";
+    } else {
+      codeEl.style.display = "none";
+    }
+  } else {
+    document.getElementById("tmDesc").textContent = "Contenido en desarrollo.";
+    document.getElementById("tmCode").style.display = "none";
+  }
+
+  document.getElementById("topicModal").classList.add("open");
+}
+
+function bindTopicModal() {
+  const modal = document.getElementById("topicModal");
+  document.getElementById("tmClose").addEventListener("click", () => modal.classList.remove("open"));
+  modal.addEventListener("click", e => { if (e.target === modal) modal.classList.remove("open"); });
+  document.getElementById("tmCopyBtn").addEventListener("click", () => {
+    const code = document.getElementById("tmCodePre").textContent;
+    navigator.clipboard.writeText(code.trim()).then(() => {
+      const btn = document.getElementById("tmCopyBtn");
+      btn.textContent = "✓"; btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = "⎘"; btn.classList.remove("copied"); }, 1400);
+    });
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && modal.classList.contains("open")) modal.classList.remove("open");
+  });
+}
+
 // ── Reset & mobile toggle ─────────────────────────────────────────────────────
 document.getElementById("resetBtn").addEventListener("click", () => {
   if (confirm("¿Reiniciar todo el progreso? Esta acción no se puede deshacer.")) {
@@ -642,6 +693,7 @@ document.addEventListener("click", e => {
   bindPageContent();
   bindExport();
   bindFlashcards();
+  bindTopicModal();
   refreshProgress();
   window.addEventListener("beforeunload", () => { if (activeTimer.wkId) pauseTimer(); });
 })();

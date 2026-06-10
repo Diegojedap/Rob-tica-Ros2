@@ -49,6 +49,27 @@
 
   <input type="file" id="importInput" accept=".json" style="display:none">
 
+  <!-- TOPIC MODAL -->
+  <div class="topic-modal" id="topicModal">
+    <div class="topic-card">
+      <div class="topic-modal-header">
+        <div class="topic-modal-meta">
+          <span class="topic-modal-week" id="tmWeek"></span>
+          <h3 class="topic-modal-title" id="tmTitle"></h3>
+        </div>
+        <button class="topic-modal-close" id="tmClose">✕</button>
+      </div>
+      <p class="topic-modal-desc" id="tmDesc"></p>
+      <div class="topic-modal-code" id="tmCode">
+        <div class="snippet-header">
+          <span class="snippet-label" id="tmCodeLabel">Ejemplo</span>
+          <button class="copy-btn" id="tmCopyBtn">⎘</button>
+        </div>
+        <pre class="snippet-pre" id="tmCodePre"></pre>
+      </div>
+    </div>
+  </div>
+
   <!-- FLASHCARD MODAL -->
   <div class="flash-modal" id="flashModal">
     <div class="flash-card">
