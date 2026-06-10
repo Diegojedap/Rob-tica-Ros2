@@ -61,7 +61,12 @@ body::before {
   flex-direction: column;
   scrollbar-width: thin;
   scrollbar-color: var(--line2) transparent;
+  transition: transform .3s cubic-bezier(.2,.8,.2,1);
 }
+
+/* Desktop collapsed state */
+.gsidebar.gs-collapsed { transform: translateX(-255px); }
+.gsidebar.gs-collapsed + .app-right { margin-left: 0; }
 
 .gs-head {
   padding: 22px 18px 16px;
@@ -152,19 +157,22 @@ body::before {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  transition: margin-left .3s cubic-bezier(.2,.8,.2,1);
 }
 
 /* ── TOPBAR ── */
 .gs-toggle {
-  display: none;
+  display: block;
   background: none;
   border: none;
   color: var(--text);
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   cursor: pointer;
   padding: 4px 8px;
   flex-shrink: 0;
+  transition: color .2s;
 }
+.gs-toggle:hover { color: var(--green); }
 
 .topbar {
   position: sticky;
@@ -683,19 +691,19 @@ section { padding: 18px 0 8px; }
 @media (max-width: 900px) {
   :root { --gs-w: 0px; }
 
-  .gs-toggle { display: block; }
-
   .gsidebar {
     transform: translateX(-255px);
     width: 255px;
-    transition: transform .3s cubic-bezier(.2,.8,.2,1);
   }
   .gsidebar.open {
     transform: translateX(0);
     box-shadow: 4px 0 40px -4px rgba(0,0,0,.6);
   }
+  /* Reset desktop collapsed on mobile */
+  .gsidebar.gs-collapsed { transform: translateX(-255px); }
+  .gsidebar.gs-collapsed + .app-right { margin-left: 0; }
 
-  .app-right { margin-left: 0; }
+  .app-right { margin-left: 0; transition: none; }
 
   .page-content { padding: 24px 20px 20px; }
   .page-content.page-week { padding: 0; }

@@ -360,7 +360,7 @@ function renderGlobalSidebar() {
   document.getElementById("gSidebar").querySelectorAll("[data-page]").forEach(btn => {
     btn.addEventListener("click", () => {
       showPage(btn.dataset.page);
-      document.getElementById("gSidebar").classList.remove("open");
+      if (window.innerWidth <= 900) document.getElementById("gSidebar").classList.remove("open");
     });
   });
 }
@@ -740,10 +740,16 @@ document.getElementById("resetBtn").addEventListener("click", () => {
 });
 
 document.getElementById("gsToggle").addEventListener("click", () => {
-  document.getElementById("gSidebar").classList.toggle("open");
+  const sidebar = document.getElementById("gSidebar");
+  if (window.innerWidth <= 900) {
+    sidebar.classList.toggle("open");
+  } else {
+    sidebar.classList.toggle("gs-collapsed");
+  }
 });
 
 document.addEventListener("click", e => {
+  if (window.innerWidth > 900) return;
   const sidebar = document.getElementById("gSidebar");
   if (sidebar.classList.contains("open") && !sidebar.contains(e.target) && !e.target.closest("#gsToggle")) {
     sidebar.classList.remove("open");
