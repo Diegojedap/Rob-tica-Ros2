@@ -2,10 +2,11 @@ const STORE_KEY = "ros2-go2-progress-v1";
 const NOTES_KEY = "ros2-go2-notes-v1";
 const TIMER_KEY = "ros2-go2-timers-v1";
 const CONF_KEY  = "ros2-go2-conf-v1";
+const LINKS_KEY = "ros2-go2-links-v1";
 const CHECK_SVG = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"></polyline></svg>';
 const RING_WK   = 2 * Math.PI * 10;
 
-let state = {}, notes = {}, timers = {}, conf = {};
+let state = {}, notes = {}, timers = {}, conf = {}, links = {};
 let activePage  = "inicio";
 let activeWk    = null;
 let activeTimer = { wkId: null, intId: null, startMs: 0 };
@@ -18,11 +19,13 @@ function loadState()  { try { const s = localStorage.getItem(STORE_KEY); if (s) 
 function loadNotes()  { try { const s = localStorage.getItem(NOTES_KEY); if (s) notes  = JSON.parse(s); } catch { notes  = {}; } }
 function loadTimers() { try { const s = localStorage.getItem(TIMER_KEY); if (s) timers = JSON.parse(s); } catch { timers = {}; } }
 function loadConf()   { try { const s = localStorage.getItem(CONF_KEY);  if (s) conf   = JSON.parse(s); } catch { conf   = {}; } }
+function loadLinks()  { try { const s = localStorage.getItem(LINKS_KEY); if (s) links  = JSON.parse(s); } catch { links  = {}; } }
 
 function saveState()  { try { localStorage.setItem(STORE_KEY, JSON.stringify(state));  } catch(e){} showToast(); }
 function saveNotes()  { try { localStorage.setItem(NOTES_KEY, JSON.stringify(notes));  } catch(e){} }
 function saveTimers() { try { localStorage.setItem(TIMER_KEY, JSON.stringify(timers)); } catch(e){} }
 function saveConf()   { try { localStorage.setItem(CONF_KEY,  JSON.stringify(conf));   } catch(e){} }
+function saveLinks()  { try { localStorage.setItem(LINKS_KEY, JSON.stringify(links));  } catch(e){} }
 
 function showToast() {
   clearTimeout(saveTimer);
@@ -58,6 +61,27 @@ function weekPct(w) {
 function itemHTML(item) {
   const detail = item.s ? `<small>${item.s}</small>` : "";
   return `<div class="item" data-id="${item.id}"><span class="box">${CHECK_SVG}</span><span class="lbl">${item.l}${detail}</span></div>`;
+}
+
+function labItemHTML(item) {
+  const detail = item.s ? `<small>${item.s}</small>` : "";
+  const link   = links[item.id] || "";
+  const badge  = link
+    ? `<a class="lab-link-badge" href="${link}" target="_blank" rel="noopener noreferrer">🔗 Ver trabajo</a>
+       <button class="lab-link-clear" data-lid="${item.id}" title="Quitar enlace">✕</button>`
+    : `<button class="lab-attach-btn" data-lid="${item.id}">📎 Adjuntar enlace</button>`;
+  return `<div class="item lab-item" data-id="${item.id}">
+    <span class="box">${CHECK_SVG}</span>
+    <div class="lab-content">
+      <span class="lbl">${item.l}${detail}</span>
+      <div class="lab-foot">${badge}</div>
+      <div class="lab-input-wrap" id="linput-${item.id}" style="display:none">
+        <input class="lab-link-input" data-lid="${item.id}" type="text"
+               placeholder="URL de GitHub, Drive, Notion, YouTube..." value="${link}"/>
+        <button class="lab-link-save" data-lid="${item.id}">✓ Guardar</button>
+      </div>
+    </div>
+  </div>`;
 }
 
 function videoHTML(item) {
@@ -248,7 +272,7 @@ function renderWeekContent(wkId) {
   const idx = WEEKS.indexOf(w);
   const pct = weekPct(w);
   const topics  = w.topics.map(t => `<button class="topic" data-wk="${w.id}" data-topic="${t}">${t}</button>`).join("");
-  const labs    = w.labs.map(itemHTML).join("");
+  const labs    = w.labs.map(labItemHTML).join("");
   const vids    = w.videos.map(videoHTML).join("");
   const forts   = w.forts.map((f, i) => `<div class="fort" data-id="${w.id}_f${i}"><span class="led"></span>${f}</div>`).join("");
   const defensa = w.defensa.map((q, i) => defensaHTML(q, `${w.id}_d${i}`)).join("");
@@ -449,13 +473,51 @@ function refreshProgress() {
   }
 }
 
+// ── Lab attachment DOM update ─────────────────────────────────────────────────
+function updateLabItemDOM(lid) {
+  const item = document.querySelector(`.lab-item[data-id="${lid}"]`);
+  if (!item) return;
+  const link = links[lid] || "";
+  const foot = item.querySelector(".lab-foot");
+  if (foot) {
+    foot.innerHTML = link
+      ? `<a class="lab-link-badge" href="${link}" target="_blank" rel="noopener noreferrer">🔗 Ver trabajo</a>
+         <button class="lab-link-clear" data-lid="${lid}" title="Quitar enlace">✕</button>`
+      : `<button class="lab-attach-btn" data-lid="${lid}">📎 Adjuntar enlace</button>`;
+  }
+  const wrap = document.getElementById(`linput-${lid}`);
+  if (wrap) wrap.style.display = "none";
+}
+
 // ── Event delegation ──────────────────────────────────────────────────────────
 function bindPageContent() {
   const content = document.getElementById("pageContent");
 
   content.addEventListener("click", e => {
+    // Lab attachment buttons (before item handler so they don't toggle checkbox)
+    const attachBtn = e.target.closest(".lab-attach-btn");
+    if (attachBtn) {
+      const lid = attachBtn.dataset.lid;
+      const wrap = document.getElementById(`linput-${lid}`);
+      if (wrap) { wrap.style.display = "flex"; wrap.querySelector("input")?.focus(); }
+      return;
+    }
+    const saveBtn = e.target.closest(".lab-link-save");
+    if (saveBtn) {
+      const lid = saveBtn.dataset.lid;
+      const inp = document.querySelector(`.lab-link-input[data-lid="${lid}"]`);
+      if (inp) { links[lid] = inp.value.trim(); saveLinks(); updateLabItemDOM(lid); }
+      return;
+    }
+    const clearBtn = e.target.closest(".lab-link-clear");
+    if (clearBtn) {
+      const lid = clearBtn.dataset.lid;
+      links[lid] = ""; saveLinks(); updateLabItemDOM(lid);
+      return;
+    }
+
     const item = e.target.closest(".item");
-    if (item && !e.target.closest(".vid-link")) {
+    if (item && !e.target.closest(".vid-link") && !e.target.closest(".lab-foot") && !e.target.closest(".lab-input-wrap")) {
       const id = item.dataset.id;
       state[id] = !state[id];
       applyOne(id); refreshProgress(); saveState();
@@ -548,7 +610,7 @@ function updateTimerDisplay(wkId, secs) {
 
 // ── Export / Import ───────────────────────────────────────────────────────────
 function exportProgress() {
-  const blob = new Blob([JSON.stringify({ state, notes, timers, conf }, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify({ state, notes, timers, conf, links }, null, 2)], { type: "application/json" });
   const url  = URL.createObjectURL(blob);
   const a    = Object.assign(document.createElement("a"), { href: url, download: `ros2-progreso-${new Date().toISOString().slice(0,10)}.json` });
   a.click(); URL.revokeObjectURL(url);
@@ -563,6 +625,7 @@ function importProgress(file) {
       if (d.notes)  localStorage.setItem(NOTES_KEY, JSON.stringify(d.notes));
       if (d.timers) localStorage.setItem(TIMER_KEY, JSON.stringify(d.timers));
       if (d.conf)   localStorage.setItem(CONF_KEY,  JSON.stringify(d.conf));
+      if (d.links)  localStorage.setItem(LINKS_KEY, JSON.stringify(d.links));
       location.reload();
     } catch { alert("Archivo inválido."); }
   };
@@ -687,7 +750,7 @@ document.addEventListener("click", e => {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 (function init() {
-  loadState(); loadNotes(); loadTimers(); loadConf();
+  loadState(); loadNotes(); loadTimers(); loadConf(); loadLinks();
   activeWk = WEEKS[0].id;
   showPage("inicio");
   bindPageContent();
