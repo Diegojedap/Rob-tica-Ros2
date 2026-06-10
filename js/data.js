@@ -6,6 +6,32 @@ const WEEKS = [
     t1: "Fundamentos y ROS2",
     t2: "Qué es un robot · coordenadas · URDF · primer nodo",
     obj: "Comprender qué es un robot, sus componentes, sistemas de coordenadas y cinemática básica; dar los primeros pasos en ROS2.",
+    conceptos: [
+      { t: "Nodo",    d: "Proceso independiente que ejecuta lógica. Equivalente a un microservicio." },
+      { t: "Tópico",  d: "Canal pub/sub asíncrono. Los nodos publican y se suscriben sin conocerse directamente." },
+      { t: "Mensaje", d: "Estructura de datos tipada que viaja por un tópico (ej: String, Float64, Twist)." },
+      { t: "URDF",    d: "XML que describe la geometría, masa y joints de un robot. Es el 'blueprint'." },
+    ],
+    snippet: {
+      l: "Minimal Publisher (Python)",
+      c: `import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
+class MinPub(Node):
+    def __init__(self):
+        super().__init__('minimal_publisher')
+        self.pub = self.create_publisher(String, 'topic', 10)
+        self.create_timer(1.0, self.cb)
+
+    def cb(self):
+        msg = String()
+        msg.data = 'Hola ROS2'
+        self.pub.publish(msg)
+
+rclpy.init()
+rclpy.spin(MinPub())`,
+    },
     topics: [
       "Arquitectura de robot (3 capas)",
       "Frames y coordenadas",
@@ -50,6 +76,28 @@ const WEEKS = [
     t1: "ROS2 Avanzado",
     t2: "Servicios · acciones · launch files · parámetros · rqt_graph",
     obj: "Dominar servicios, acciones, launch files y parámetros — la comunicación más allá del Pub/Sub.",
+    conceptos: [
+      { t: "Servicio",    d: "Comunicación síncrona Request/Reply. El cliente bloquea esperando la respuesta." },
+      { t: "Acción",      d: "Tarea larga con feedback continuo: Goal → Feedback → Result. No bloquea." },
+      { t: "Launch file", d: "Script Python que inicia múltiples nodos con sus parámetros y remapeos." },
+      { t: "Parámetro",   d: "Variable de configuración de un nodo, modificable en tiempo real sin reiniciar." },
+    ],
+    snippet: {
+      l: "Llamar un servicio desde código",
+      c: `from example_interfaces.srv import AddTwoInts
+import rclpy
+
+node = rclpy.create_node('client')
+cli = node.create_client(AddTwoInts, 'add_two_ints')
+cli.wait_for_service()
+
+req = AddTwoInts.Request()
+req.a, req.b = 3, 5
+
+future = cli.call_async(req)
+rclpy.spin_until_future_complete(node, future)
+print(future.result().sum)  # → 8`,
+    },
     topics: [
       "Servicios (Req/Reply)",
       "Acciones (Goal/Feedback/Result)",
@@ -90,6 +138,31 @@ const WEEKS = [
     t1: "Transformadas TF2 y Odometría",
     t2: "Frames dinámicos · broadcaster · listener · quaterniones",
     obj: "Comprender cómo el robot sabe dónde está — el problema más fundamental de la robótica móvil.",
+    conceptos: [
+      { t: "Frame",        d: "Sistema de coordenadas con nombre (world, base_link, camera_link). Son el lenguaje del espacio." },
+      { t: "Broadcaster",  d: "Nodo que publica transformadas al árbol TF. Dice 'mi hijo está a X de mí'." },
+      { t: "Listener",     d: "Nodo que consulta la posición relativa entre dos frames en cualquier momento." },
+      { t: "Quaternion",   d: "Representación de orientación 3D sin gimbal lock: (x, y, z, w). w=1 → sin rotación." },
+    ],
+    snippet: {
+      l: "TF2 Broadcaster (Python)",
+      c: `from tf2_ros import TransformBroadcaster
+from geometry_msgs.msg import TransformStamped
+import rclpy
+
+node = rclpy.create_node('broadcaster')
+br = TransformBroadcaster(node)
+
+t = TransformStamped()
+t.header.stamp = node.get_clock().now().to_msg()
+t.header.frame_id = 'world'
+t.child_frame_id = 'base_link'
+t.transform.translation.x = 1.0
+t.transform.translation.y = 0.5
+t.transform.rotation.w = 1.0  # sin rotacion
+
+br.sendTransform(t)`,
+    },
     topics: [
       "Sistema TF2",
       "TF2 Broadcaster",
@@ -132,6 +205,32 @@ const WEEKS = [
     t1: "Control de Movimiento y PID",
     t2: "Controlador PID · cmd_vel · TurtleBot3 en Gazebo · trayectorias",
     obj: "Hacer que el robot se mueva de forma controlada con controladores PID y comandos de velocidad.",
+    conceptos: [
+      { t: "PID",     d: "Proporcional-Integral-Derivativo. Cada componente corrige un aspecto distinto del error." },
+      { t: "Twist",   d: "Mensaje de velocidad: linear.x (avanzar/retroceder), angular.z (girar). Simplifica el control." },
+      { t: "cmd_vel", d: "Tópico estándar para comandos de velocidad. Cualquier robot diferencial lo entiende." },
+      { t: "Error",   d: "Diferencia entre posición deseada y actual. El PID trabaja para llevarlo a cero." },
+    ],
+    snippet: {
+      l: "Controlador PID básico (Python)",
+      c: `from geometry_msgs.msg import Twist
+
+Kp, Ki, Kd = 1.0, 0.05, 0.02
+integral = prev_error = 0.0
+
+def pid_step(target, current, dt):
+    global integral, prev_error
+    error      = target - current
+    integral  += error * dt
+    derivative = (error - prev_error) / dt
+    prev_error = error
+    return Kp * error + Ki * integral + Kd * derivative
+
+# En el callback de odometría:
+vel = Twist()
+vel.linear.x = pid_step(1.0, odom_x, 0.1)
+cmd_vel_pub.publish(vel)`,
+    },
     topics: [
       "Teoría PID (P, I, D)",
       "Mensajes Twist",
@@ -173,6 +272,31 @@ const WEEKS = [
     t1: "Navegación Autónoma · Nav2 y SLAM",
     t2: "Nav2 Stack · SLAM Toolbox · mapas · TurtleBot3 autónomo",
     obj: "El laboratorio más complejo del curso — mapear un entorno con SLAM y luego navegarlo de forma autónoma con Nav2.",
+    conceptos: [
+      { t: "SLAM",     d: "Simultaneous Localization And Mapping: el robot construye el mapa mientras se localiza en él." },
+      { t: "Costmap",  d: "Mapa de costos: obstáculos tienen costo alto, pasillos libre bajo. El planner busca el mínimo costo." },
+      { t: "Nav2",     d: "Stack de navegación de ROS2: planifica rutas globales y las ejecuta con control local." },
+      { t: "AMCL",     d: "Adaptive Monte Carlo Localization: localiza al robot en un mapa guardado usando partículas." },
+    ],
+    snippet: {
+      l: "Enviar goal de navegación (Python)",
+      c: `from nav2_simple_commander.robot_navigator import BasicNavigator
+from geometry_msgs.msg import PoseStamped
+
+nav = BasicNavigator()
+nav.waitUntilNav2Active()
+
+goal = PoseStamped()
+goal.header.frame_id = 'map'
+goal.pose.position.x = 2.0
+goal.pose.position.y = 1.5
+goal.pose.orientation.w = 1.0
+
+nav.goToPose(goal)
+while not nav.isTaskComplete():
+    feedback = nav.getFeedback()
+    # distancia restante: feedback.distance_remaining`,
+    },
     topics: [
       "Stack de Nav2",
       "SLAM",
@@ -215,6 +339,37 @@ const WEEKS = [
     t1: "Proyecto Capstone",
     t2: "Integra todo en un sistema robótico autónomo completo",
     obj: "Integrar todo lo aprendido en un sistema robótico autónomo completo, documentado y presentable.",
+    conceptos: [
+      { t: "Waypoint",       d: "Punto de navegación en el mapa. El robot los recorre en secuencia con followWaypoints()." },
+      { t: "Lifecycle node", d: "Nodo con estados explícitos (configure → activate → deactivate) para control fino del sistema." },
+      { t: "rqt_graph",      d: "Herramienta visual que muestra todos los nodos y tópicos activos. El mapa de tu sistema." },
+      { t: "Frontier SLAM",  d: "Estrategia de exploración autónoma: el robot navega hacia los límites del mapa desconocido." },
+    ],
+    snippet: {
+      l: "Patrullero multi-waypoint (Nav2)",
+      c: `from nav2_simple_commander.robot_navigator import BasicNavigator
+from geometry_msgs.msg import PoseStamped
+
+nav = BasicNavigator()
+nav.waitUntilNav2Active()
+
+waypoints_xy = [(0.0, 0.0), (2.0, 0.0), (2.0, 2.0), (0.0, 2.0)]
+
+def make_pose(x, y):
+    p = PoseStamped()
+    p.header.frame_id = 'map'
+    p.pose.position.x = x
+    p.pose.position.y = y
+    p.pose.orientation.w = 1.0
+    return p
+
+poses = [make_pose(x, y) for x, y in waypoints_xy]
+
+while True:  # patrulla infinita
+    nav.followWaypoints(poses)
+    while not nav.isTaskComplete():
+        pass`,
+    },
     topics: [
       "Diseñar arquitectura",
       "Integrar control + localización + nav",

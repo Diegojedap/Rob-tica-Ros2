@@ -11,154 +11,64 @@
 </head>
 <body>
 
-  <!-- STICKY PROGRESS -->
-  <div class="topbar">
-    <div class="wrap">
-      <div class="tb-logo">ROS2<span>//</span>GO2</div>
-      <div class="tb-track"><div class="tb-fill" id="tbFill"></div></div>
-      <div class="tb-pct" id="tbPct">0%</div>
-    </div>
-  </div>
+  <div class="app-shell">
 
-  <div class="wrap">
+    <!-- SIDEBAR GLOBAL -->
+    <aside class="gsidebar" id="gSidebar"></aside>
 
-    <!-- HERO -->
-    <header class="hero">
-      <div class="kicker">Plan de estudios autogestionable · 6 semanas</div>
-      <h1>Robótica<br>Fundamental con <span class="em">ROS2</span></h1>
-      <p class="lede">Programa práctico para llevar a ingenieros de software a dominar la robótica autónoma — de los fundamentos a un sistema autónomo completo en simulación, con el cuadrúpedo Unitree Go2 Air como horizonte.</p>
-      <div class="meta-row">
-        <div class="chip"><b>6</b> semanas</div>
-        <div class="chip"><b>60</b> horas · 2h/día</div>
-        <div class="chip">ROS2 <b>Humble</b></div>
-        <div class="chip">WSL + Ubuntu <b>22.04</b></div>
-        <div class="chip">Simulación en <b>Gazebo</b></div>
-        <div class="chip">Robot: <b>Unitree Go2 Air</b></div>
+    <!-- ÁREA DERECHA -->
+    <div class="app-right">
+
+      <!-- TOPBAR -->
+      <div class="topbar">
+        <button class="gs-toggle" id="gsToggle">☰</button>
+        <div class="tb-logo">ROS2<span>//</span>GO2</div>
+        <div class="tb-track"><div class="tb-fill" id="tbFill"></div></div>
+        <div class="tb-pct" id="tbPct">0%</div>
+        <button class="flash-trigger" id="flashBtn">⚡ Repaso</button>
       </div>
-      <div class="stats-strip">
-        <div class="stat"><span class="stat-n">5</span><span class="stat-l">módulos</span></div>
-        <div class="stat"><span class="stat-n">6</span><span class="stat-l">semanas</span></div>
-        <div class="stat"><span class="stat-n">60</span><span class="stat-l">horas</span></div>
-        <div class="stat"><span class="stat-n">11+</span><span class="stat-l">laboratorios</span></div>
-        <div class="stat"><span class="stat-n">1</span><span class="stat-l">capstone</span></div>
-      </div>
-    </header>
 
-    <!-- ARQUITECTURA -->
-    <section>
-      <div class="sec-head"><span class="sec-num">A</span><h2>Diseño y arquitectura del software</h2></div>
-      <div class="arch-grid">
+      <!-- CONTENIDO DE PÁGINA -->
+      <main id="pageContent" class="page-content"></main>
 
-        <div class="card">
-          <h3><span class="dot"></span>Mapa de módulos</h3>
-          <p class="sub">El curso avanza de forma progresiva: cada módulo es prerequisito del siguiente.</p>
-          <div class="flow">
-            <div class="flow-step"><span class="flow-ico">M1</span><span class="flow-txt"><b>Fundamentos</b><br><span>Qué es un robot · cinemática · sensores · frames</span></span></div>
-            <div class="flow-step"><span class="flow-ico">M2</span><span class="flow-txt"><b>ROS2 esencial</b><br><span>Nodos · tópicos · servicios · arquitectura distribuida</span></span></div>
-            <div class="flow-step"><span class="flow-ico">M3</span><span class="flow-txt"><b>Transformadas</b><br><span>TF2 · odometría · localización</span></span></div>
-            <div class="flow-step"><span class="flow-ico">M4</span><span class="flow-txt"><b>Control</b><br><span>PID · trayectorias · locomoción</span></span></div>
-            <div class="flow-step"><span class="flow-ico">M5</span><span class="flow-txt"><b>Capstone</b><br><span>Proyecto integrado: tu sistema autónomo</span></span></div>
-          </div>
+      <!-- FOOTER -->
+      <footer class="app-footer">
+        Plan de estudios · ROS2 &amp; Robótica Fundamental con Unitree Go2 Air<br>
+        <small>Tu progreso se guarda automáticamente en este dispositivo.</small>
+        <div class="footer-btns">
+          <button class="reset"      id="resetBtn">↺ Reiniciar</button>
+          <button class="export-btn" id="exportBtn">↓ Exportar progreso</button>
+          <button class="export-btn" id="importBtn">↑ Importar progreso</button>
         </div>
+      </footer>
 
-        <div class="card">
-          <h3><span class="dot"></span>Robot = microservicio distribuido</h3>
-          <p class="sub">Todo robot sigue el mismo patrón de 3 capas. Tú ya lo conoces con otro nombre.</p>
-          <div class="layers">
-            <div class="layer">
-              <div class="lt">Percepción · Sensores</div>
-              <div class="ld">Leer el mundo: distancias, IMU, cámara, LiDAR</div>
-              <div class="lmap">→ Input / API endpoint</div>
-            </div>
-            <div class="layer">
-              <div class="lt">Procesamiento · CPU</div>
-              <div class="ld">Tomar decisiones con base en los datos</div>
-              <div class="lmap">→ Lógica de negocio / microservicio</div>
-            </div>
-            <div class="layer">
-              <div class="lt">Acción · Actuadores</div>
-              <div class="ld">Mover motores, articulaciones, ruedas</div>
-              <div class="lmap">→ Output / efecto en el sistema</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="grid-column:1/-1">
-          <h3><span class="dot"></span>Stack tecnológico del capstone</h3>
-          <p class="sub">ROS2 es a la robótica lo que Docker es a DevOps: middleware de comunicación. Los nodos son microservicios; los tópicos, un bus de eventos.</p>
-          <div class="stack">
-            <span class="node">ROS2<small>comunicación</small></span><span class="arrow">→</span>
-            <span class="node">Gazebo<small>simulación</small></span><span class="arrow">→</span>
-            <span class="node">SLAM<small>mapeo</small></span><span class="arrow">→</span>
-            <span class="node">Nav2<small>navegación</small></span><span class="arrow">→</span>
-            <span class="node">RViz<small>visualización</small></span>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- SEMANAS -->
-    <section>
-      <div class="sec-head"><span class="sec-num">B</span><h2>Actividades por semana</h2></div>
-      <div id="weeks"></div>
-    </section>
-
-    <!-- CHECKLIST FINAL -->
-    <section>
-      <div class="sec-head"><span class="sec-num">C</span><h2>Checklist final del curso</h2></div>
-      <div class="final">
-        <p class="sub" style="color:var(--dim);font-size:.86rem;font-weight:300;margin-bottom:6px">Las competencias clave que debes tener al cerrar el curso. Cuando estén todas en verde, tienes las bases para trabajar con cualquier robot que use ROS2.</p>
-        <div class="final-grid" id="finalGrid"></div>
-        <div class="seal" id="seal">
-          <div class="lock" id="sealIcon">🔒</div>
-          <h3 id="sealTitle">Sello de completado bloqueado</h3>
-          <p id="sealMsg">Marca todas las competencias del checklist final para desbloquearlo.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- EVALUACIÓN -->
-    <section>
-      <div class="sec-head"><span class="sec-num">D</span><h2>Evaluación y calificación</h2></div>
-      <div class="eval-grid">
-        <div class="eval-card">
-          <h3 class="eval-h">Distribución de notas</h3>
-          <div class="eval-row"><span class="eval-comp">Laboratorios por módulo</span><span class="eval-pct pct-50">50%</span></div>
-          <div class="eval-row"><span class="eval-comp">Código y documentación</span><span class="eval-pct pct-30">30%</span></div>
-          <div class="eval-row"><span class="eval-comp">Proyecto capstone</span><span class="eval-pct pct-20">20%</span></div>
-        </div>
-        <div class="eval-card">
-          <h3 class="eval-h">Escala de calificación</h3>
-          <div class="eval-scale">
-            <div class="scale-row"><span class="scale-range green-t">90–100</span><span class="scale-label">Excelente · Listo para industria</span></div>
-            <div class="scale-row"><span class="scale-range">80–89</span><span class="scale-label">Bueno · Comprensión sólida, detalles menores</span></div>
-            <div class="scale-row"><span class="scale-range amber-t">70–79</span><span class="scale-label">Satisfactorio · Necesita refuerzo</span></div>
-            <div class="scale-row"><span class="scale-range red-t">&lt; 70</span><span class="scale-label">Necesita mejora · Repasar módulos</span></div>
-          </div>
-        </div>
-        <div class="eval-card" style="grid-column:1/-1">
-          <h3 class="eval-h">Mecánica autogestionable</h3>
-          <p class="eval-note">Trabajas a tu ritmo, sin fechas fijas. La regla es <strong>no avanzar de semana</strong> hasta tener todos los semáforos en verde (entiendo y puedo defenderlo con ejemplos) y responder las preguntas de defensa sin mirar notas. Hay criterio de calidad, no de calendario.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- COMANDOS -->
-    <section>
-      <div class="sec-head"><span class="sec-num">E</span><h2>Referencia rápida de comandos</h2></div>
-      <div id="cmdGrid" class="cmd-grid"></div>
-    </section>
-
-    <footer>
-      Plan de estudios · ROS2 &amp; Robótica Fundamental con Unitree Go2 Air<br>
-      Tu progreso se guarda automáticamente en este dispositivo.
-      <br><button class="reset" id="resetBtn">↺ Reiniciar progreso</button>
-    </footer>
-
-  </div>
+    </div><!-- /app-right -->
+  </div><!-- /app-shell -->
 
   <div class="save-flash" id="flash">✓ Guardado</div>
+
+  <input type="file" id="importInput" accept=".json" style="display:none">
+
+  <!-- FLASHCARD MODAL -->
+  <div class="flash-modal" id="flashModal">
+    <div class="flash-card">
+      <div class="flash-header">
+        <span class="flash-week" id="flashWeek"></span>
+        <span class="flash-counter" id="flashCounter"></span>
+        <button class="flash-close" id="flashClose">✕</button>
+      </div>
+      <div class="flash-q" id="flashQ"></div>
+      <div class="flash-conf">
+        <button class="conf-btn no-se"  data-conf="1">✗ No lo sé</button>
+        <button class="conf-btn dudoso" data-conf="2">~ Más o menos</button>
+        <button class="conf-btn domino" data-conf="3">✓ Lo domino</button>
+      </div>
+      <div class="flash-nav">
+        <button class="flash-nav-btn" id="flashPrev">← Anterior</button>
+        <button class="flash-nav-btn" id="flashNext">Siguiente →</button>
+      </div>
+    </div>
+  </div>
 
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
