@@ -494,6 +494,13 @@ function bindPageContent() {
   const content = document.getElementById("pageContent");
 
   content.addEventListener("click", e => {
+    // Topic chips — must come first so nothing else can swallow the click
+    const topicBtn = e.target.closest(".topic[data-topic]");
+    if (topicBtn) {
+      openTopicModal(topicBtn.dataset.wk, topicBtn.dataset.topic);
+      return;
+    }
+
     // Lab attachment buttons (before item handler so they don't toggle checkbox)
     const attachBtn = e.target.closest(".lab-attach-btn");
     if (attachBtn) {
@@ -556,12 +563,6 @@ function bindPageContent() {
     const goBtn = e.target.closest("[data-go]");
     if (goBtn && goBtn.dataset.go) {
       showPage(`wk-${goBtn.dataset.go}`);
-      return;
-    }
-    // Topic chips
-    const topicBtn = e.target.closest(".topic[data-topic]");
-    if (topicBtn) {
-      openTopicModal(topicBtn.dataset.wk, topicBtn.dataset.topic);
       return;
     }
   });
@@ -688,6 +689,7 @@ function bindFlashcards() {
 // ── Topic modal ───────────────────────────────────────────────────────────────
 function openTopicModal(wkId, topicName) {
   const w = WEEKS.find(x => x.id === wkId);
+  if (!w) return;
   const detail = w.topicDetails && w.topicDetails[topicName];
 
   document.getElementById("tmWeek").textContent  = w.tag;
