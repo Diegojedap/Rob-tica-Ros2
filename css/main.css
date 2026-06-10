@@ -342,6 +342,8 @@ section { padding: 18px 0 8px; }
   font-weight: 300;
   cursor: pointer;
   transition: all .2s;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .topic:hover {
   background: rgba(54,220,132,.08);
